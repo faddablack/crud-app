@@ -71,8 +71,6 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 
 ## To Do
 - Create checkbox component
-- Create task component
-- Create function to create task
-- Create function to read task
-- Create function to update task
-- Create function to delete task 
+- Add checkbox that will mark task as done, this should appear at the front of each task name.
+- Use SQLite as a database to persist the saved tasks across different browsers.
+- Add user feedback that will alert the user when they're about to delete a task.
