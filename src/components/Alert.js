@@ -1,14 +1,9 @@
-import {
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalTitle,
-} from '@react-ui-org/react-ui';
-import {Button } from '@react-ui-org/react-ui';
-import {GlobalPropsProvider} from '@react-ui-org/react-ui'
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import React from 'react'
 
 function Alert({isOpen, message, isDelete, isClose}){
@@ -16,45 +11,31 @@ function Alert({isOpen, message, isDelete, isClose}){
   const modalCloseButtonRef = React.useRef();
 
   return (
-    <GlobalPropsProvider globalProps={{
-      Modal: { preventScrollUnderneath: window.document.documentElement }
-    }}>
-      <div>
-        {isOpen && (
-          <Modal
-            closeButtonRef={modalCloseButtonRef}
-            primaryButtonRef={modalPrimaryButtonRef}
-          >
-            <ModalHeader>
-              <ModalTitle>Delete the user?</ModalTitle>
-              <ModalCloseButton onClick={() => isClose(false)} />
-            </ModalHeader>
-            <ModalBody>
-              <ModalContent>
-                <p>
-                  Do you really want to delete the task <code>{message}</code>?
+    <React.Fragment>
+      <Dialog
+        open={isOpen}
+        onClose={() => isClose(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        role="alertdialog"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"You are about to delete a task!"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+             Do you really want to delete the task <code>{message}</code>?
                   This cannot be undone.
-                </p>
-              </ModalContent>
-            </ModalBody>
-            <ModalFooter>
-              <Button
-                color="danger"
-                label="Delete"
-                onClick={() => isDelete()}
-                ref={modalPrimaryButtonRef}
-              />
-              <Button
-                label="Close"
-                onClick={() => isClose(false)}
-                priority="outline"
-                ref={modalCloseButtonRef}
-              />
-            </ModalFooter>
-          </Modal>
-        )}
-      </div>
-    </GlobalPropsProvider>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => isClose(false)} autoFocus>
+            Close
+          </Button>
+          <Button onClick={() => isDelete()}>Delete</Button>
+        </DialogActions>
+      </Dialog>
+    </React.Fragment>
   );
 }
 
