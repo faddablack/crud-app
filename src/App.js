@@ -3,6 +3,7 @@ import "./styles.css";
 import TodoItem from "./TodoItem";
 import AddTodoForm from "./AddTodoForm";
 import EditForm from "./EditForm";
+import Alert from "./components/Alert";
 
 export default function App() {
   const [todos, setTodos] = useState(() => {
@@ -19,6 +20,9 @@ export default function App() {
   const [isEditing, setIsEditing] = useState(false);
   // object state to set so we know which todo item we are editing
   const [currentTodo, setCurrentTodo] = useState({});
+  const [msg, setMessage] = useState('');
+  const [open, setOpen] = useState(false);
+  const [id, setId] = useState(0);
 
   useEffect(() => {
     localStorage.setItem("todos", JSON.stringify(todos));
@@ -57,11 +61,11 @@ export default function App() {
     handleUpdateTodo(currentTodo.id, currentTodo);
   }
 
-  function handleDeleteClick(id) {
-    const removeItem = todos.filter((todo) => {
-      return todo.id !== id;
-    });
-    setTodos(removeItem);
+  function handleDeleteClick(id, todo) {
+    setOpen(true)
+    setMessage(todo.text)
+    setId(id)
+    
   }
 
   // function to edit a todo item
@@ -85,6 +89,16 @@ export default function App() {
     // set the currentTodo to the todo item that was clicked
     setCurrentTodo({ ...todo });
   }
+
+  function taskDelete(id){
+    const removeItem = todos.filter((todo) => {
+      return todo.id !== id;
+    });
+
+    setTodos(removeItem);
+    setOpen(false)
+  }
+  
 
   return (
     <div className="App">
@@ -139,10 +153,11 @@ export default function App() {
             {todo.text}
             {/* we are passing the entire todo object to the handleEditClick function*/}
             <button onClick={() => handleEditClick(todo)}>Edit</button>
-            <button onClick={() => handleDeleteClick(todo.id)}>Delete</button>
+            <button onClick={() => handleDeleteClick(todo.id, todo)}>Delete</button>
           </li>
         ))}
       </ul>
+      <Alert isOpen={open} isDelete={() => taskDelete(id)} message={msg} isClose={() => setOpen(false)} />
     </div>
   );
 }
