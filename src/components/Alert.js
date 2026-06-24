@@ -32,7 +32,7 @@ function Alert({isOpen, message, isDelete, isClose}){
           <Button onClick={() => isClose(false)} autoFocus>
             Close
           </Button>
-          <Button onClick={() => isDelete()}>Delete</Button>
+          <Button color='error' onClick={() => isDelete()}>Delete</Button>
         </DialogActions>
       </Dialog>
     </React.Fragment>
