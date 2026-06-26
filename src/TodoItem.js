@@ -13,7 +13,7 @@ export default function TodoItem({
         {todo.text}
       </span>
       <button onClick={() => onEditClick(todo)}>Edit</button>
-      <button onClick={() => onDeleteClick(todo.id)}>Delete</button>
+     <button className="delete-btn" onClick={() => onDeleteClick(todo.id)}>Delete</button>
     </li>
   );
 }
