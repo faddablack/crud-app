@@ -16,3 +16,6 @@ button {
   margin-left: 10px;
   cursor: pointer;
 }
+.todo-checkbox {
+  margin-right: 8px;
+}

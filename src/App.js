@@ -81,7 +81,14 @@ export default function App() {
     // update the todos state with the updated todo
     setTodos(updatedItem);
   }
+function handleToggleDone(id) {
+  setTodos(
+    todos.map((todo) =>
+      todo.id === id ? { ...todo, done: !todo.done } : todo
+    )
+  );
 
+}
   // function to handle when the "Edit" button is clicked
   function handleEditClick(todo) {
     // set editing to true
@@ -147,16 +154,17 @@ export default function App() {
         </form>
       )}
 
-      <ul className="todo-list">
-        {todos.map((todo) => (
-          <li key={todo.id}>
-            {todo.text}
-            {/* we are passing the entire todo object to the handleEditClick function*/}
-            <button onClick={() => handleEditClick(todo)}>Edit</button>
-            <button onClick={() => handleDeleteClick(todo.id, todo)}>Delete</button>
-          </li>
-        ))}
-      </ul>
+    <ul className="todo-list">
+  {todos.map((todo) => (
+    <TodoItem
+      key={todo.id}
+      todo={todo}
+      onEditClick={handleEditClick}
+      onDeleteClick={(id) => handleDeleteClick(id, todo)}
+      onToggleDone={handleToggleDone}
+    />
+  ))}
+</ul>
       <Alert isOpen={open} isDelete={() => taskDelete(id)} message={msg} isClose={() => setOpen(false)} />
     </div>
   );

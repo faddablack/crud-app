@@ -1,14 +1,10 @@
-import React from 'react';
-
-function Checkbox({ isChecked, onChange }) {
+export default function Checkbox({ checked, onChange }) {
   return (
-    <input 
-      type="checkbox" 
-      checked={isChecked} 
-      onChange={(e) => alert(e.target.checked)} 
-      style={{ cursor: 'pointer', width: '20px', height: '20px' }}
+    <input
+      type="checkbox"
+      checked={checked}
+      onChange={onChange}
+      className="todo-checkbox"
     />
   );
 }
-
-export default Checkbox;
