@@ -4,17 +4,18 @@ import TodoItem from "./TodoItem";
 import EditForm from "./EditForm";
 import Alert from "./components/Alert";
 import {
+  getDb,
   getAllTodos,
   addTodo,
   updateTodoText,
   toggleTodoDone,
   deleteTodo,
-} from "./api";
+} from "./database";
 
 export default function App() {
+  const [db, setDb] = useState(null);
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   const [todo, setTodo] = useState("");
   const [isEditing, setIsEditing] = useState(false);
@@ -25,14 +26,10 @@ export default function App() {
 
   useEffect(() => {
     async function init() {
-      try {
-        const data = await getAllTodos();
-        setTodos(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
+      const database = await getDb();
+      setDb(database);
+      setTodos(getAllTodos(database));
+      setLoading(false);
     }
     init();
   }, []);
@@ -45,27 +42,17 @@ export default function App() {
     setCurrentTodo({ ...currentTodo, text: e.target.value });
   }
 
-  async function handleFormSubmit(e) {
+  function handleFormSubmit(e) {
     e.preventDefault();
     if (todo.trim() !== "") {
-      try {
-        const updated = await addTodo(todo.trim());
-        setTodos(updated);
-      } catch (err) {
-        setError(err.message);
-      }
+      setTodos(addTodo(db, todo.trim()));
     }
     setTodo("");
   }
 
-  async function handleEditFormSubmit(e) {
+  function handleEditFormSubmit(e) {
     e.preventDefault();
-    try {
-      const updated = await updateTodoText(currentTodo.id, currentTodo.text);
-      setTodos(updated);
-    } catch (err) {
-      setError(err.message);
-    }
+    setTodos(updateTodoText(db, currentTodo.id, currentTodo.text));
     setIsEditing(false);
   }
 
@@ -75,14 +62,8 @@ export default function App() {
     setId(id);
   }
 
-  async function handleToggleDone(todoId) {
-    const target = todos.find((t) => t.id === todoId);
-    try {
-      const updated = await toggleTodoDone(todoId, target.done);
-      setTodos(updated);
-    } catch (err) {
-      setError(err.message);
-    }
+  function handleToggleDone(id) {
+    setTodos(toggleTodoDone(db, id));
   }
 
   function handleEditClick(todo) {
@@ -90,27 +71,13 @@ export default function App() {
     setCurrentTodo({ ...todo });
   }
 
-  async function taskDelete(id) {
-    try {
-      const updated = await deleteTodo(id);
-      setTodos(updated);
-    } catch (err) {
-      setError(err.message);
-    }
+  function taskDelete(id) {
+    setTodos(deleteTodo(db, id));
     setOpen(false);
   }
 
   if (loading) {
     return <div className="App">Loading…</div>;
-  }
-
-  if (error) {
-    return (
-      <div className="App">
-        Couldn't reach the server: {error}. Make sure the backend is running
-        on http://localhost:3001.
-      </div>
-    );
   }
 
   return (

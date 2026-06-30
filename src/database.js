@@ -4,16 +4,10 @@ const STORAGE_KEY = "todoDb";
 
 let dbInstance = null;
 
-/**
- * Loads (or creates) the SQLite database, restoring from localStorage
- * if a saved copy exists. Safe to call multiple times — subsequent
- * calls reuse the same in-memory instance.
- */
 export async function getDb() {
   if (dbInstance) return dbInstance;
 
   const SQL = await initSqlJsLib({
-    // sql-wasm.wasm must be copied into the public/ folder so this resolves
     locateFile: (file) => `/${file}`,
   });
 
@@ -23,8 +17,6 @@ export async function getDb() {
     ? new SQL.Database(new Uint8Array(JSON.parse(saved)))
     : new SQL.Database();
 
-  // CREATE TABLE IF NOT EXISTS is safe to run every time, saved or not —
-  // it's a no-op once the table already exists.
   dbInstance.run(`
     CREATE TABLE IF NOT EXISTS todos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,13 +28,11 @@ export async function getDb() {
   return dbInstance;
 }
 
-/** Exports the current DB state and writes it to localStorage. */
 export function persist(db) {
   const data = db.export();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(data)));
 }
 
-/** Converts a sql.js exec() result into an array of plain objects. */
 export function rowsToObjects(result) {
   if (!result.length) return [];
   const { columns, values } = result[0];
