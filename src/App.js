@@ -4,18 +4,17 @@ import TodoItem from "./TodoItem";
 import EditForm from "./EditForm";
 import Alert from "./components/Alert";
 import {
-  getDb,
   getAllTodos,
   addTodo,
   updateTodoText,
   toggleTodoDone,
   deleteTodo,
-} from "./database";
+} from "./api";
 
 export default function App() {
-  const [db, setDb] = useState(null);
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [todo, setTodo] = useState("");
   const [isEditing, setIsEditing] = useState(false);
@@ -24,14 +23,16 @@ export default function App() {
   const [open, setOpen] = useState(false);
   const [id, setId] = useState(0);
 
-  // Load the database once on mount. This is async because the wasm
-  // binary has to be fetched, so the rest of the UI waits on `loading`.
   useEffect(() => {
     async function init() {
-      const database = await getDb();
-      setDb(database);
-      setTodos(getAllTodos(database));
-      setLoading(false);
+      try {
+        const data = await getAllTodos();
+        setTodos(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
     }
     init();
   }, []);
@@ -44,17 +45,27 @@ export default function App() {
     setCurrentTodo({ ...currentTodo, text: e.target.value });
   }
 
-  function handleFormSubmit(e) {
+  async function handleFormSubmit(e) {
     e.preventDefault();
     if (todo.trim() !== "") {
-      setTodos(addTodo(db, todo.trim()));
+      try {
+        const updated = await addTodo(todo.trim());
+        setTodos(updated);
+      } catch (err) {
+        setError(err.message);
+      }
     }
     setTodo("");
   }
 
-  function handleEditFormSubmit(e) {
+  async function handleEditFormSubmit(e) {
     e.preventDefault();
-    setTodos(updateTodoText(db, currentTodo.id, currentTodo.text));
+    try {
+      const updated = await updateTodoText(currentTodo.id, currentTodo.text);
+      setTodos(updated);
+    } catch (err) {
+      setError(err.message);
+    }
     setIsEditing(false);
   }
 
@@ -64,8 +75,14 @@ export default function App() {
     setId(id);
   }
 
-  function handleToggleDone(id) {
-    setTodos(toggleTodoDone(db, id));
+  async function handleToggleDone(todoId) {
+    const target = todos.find((t) => t.id === todoId);
+    try {
+      const updated = await toggleTodoDone(todoId, target.done);
+      setTodos(updated);
+    } catch (err) {
+      setError(err.message);
+    }
   }
 
   function handleEditClick(todo) {
@@ -73,13 +90,27 @@ export default function App() {
     setCurrentTodo({ ...todo });
   }
 
-  function taskDelete(id) {
-    setTodos(deleteTodo(db, id));
+  async function taskDelete(id) {
+    try {
+      const updated = await deleteTodo(id);
+      setTodos(updated);
+    } catch (err) {
+      setError(err.message);
+    }
     setOpen(false);
   }
 
   if (loading) {
     return <div className="App">Loading…</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="App">
+        Couldn't reach the server: {error}. Make sure the backend is running
+        on http://localhost:3001.
+      </div>
+    );
   }
 
   return (
