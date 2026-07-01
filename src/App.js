@@ -11,6 +11,8 @@ import {
   toggleTodoDone,
   deleteTodo,
 } from "./database";
+import TodoStats from './components/TodoStats';
+
 
 export default function App() {
   const [db, setDb] = useState(null);
@@ -76,12 +78,14 @@ export default function App() {
     setOpen(false);
   }
 
+
   if (loading) {
     return <div className="App">Loading…</div>;
   }
 
   return (
     <div className="App">
+        <TodoStats todos={todos} />
       {isEditing ? (
         <EditForm
           currentTodo={currentTodo}
