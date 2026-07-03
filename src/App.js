@@ -77,55 +77,76 @@ export default function App() {
     setTodos(deleteTodo(db, id));
     setOpen(false);
   }
+const [view, setView] = useState('dashboard'); // 'dashboard' | 'pending' | 'completed'
 
+function handleCardClick(type) {
+  setView(type);
+}
 
-  if (loading) {
-    return <div className="App">Loading…</div>;
-  }
+function handleBackClick() {
+  setView('dashboard');
+}
+if (loading) {
+  return <div className="App">Loading…</div>;
+}
 
-  return (
-    <div className="App">
-        <TodoStats todos={todos} />
-      {isEditing ? (
-        <EditForm
-          currentTodo={currentTodo}
-          setIsEditing={setIsEditing}
-          onEditInputChange={handleEditInputChange}
-          onEditFormSubmit={handleEditFormSubmit}
+return (
+  <div className="App app-layout">
+    <TodoStats todos={todos} onSelect={handleCardClick} />
+
+    {view !== 'dashboard' && (
+      <div className="main-content">
+        <button className="back-button" onClick={handleBackClick}>
+          ← Back to dashboard
+        </button>
+
+        <h2>{view === 'pending' ? 'Pending Todos' : 'Completed Todos'}</h2>
+
+        {view === 'pending' && (
+          isEditing ? (
+            <EditForm
+              currentTodo={currentTodo}
+              setIsEditing={setIsEditing}
+              onEditInputChange={handleEditInputChange}
+              onEditFormSubmit={handleEditFormSubmit}
+            />
+          ) : (
+            <form onSubmit={handleFormSubmit}>
+              <label htmlFor="todo">Add todo: </label>
+              <input
+                name="todo"
+                type="text"
+                placeholder="Create a new todo"
+                value={todo}
+                onChange={handleInputChange}
+              />
+              <button type="submit">Add</button>
+            </form>
+          )
+        )}
+
+        <ul className="todo-list">
+          {todos
+            .filter((t) => (view === 'pending' ? !t.done : t.done))
+            .map((todo) => (
+              <TodoItem
+                key={todo.id}
+                todo={todo}
+                onEditClick={handleEditClick}
+                onDeleteClick={(id) => handleDeleteClick(id, todo)}
+                onToggleDone={handleToggleDone}
+              />
+            ))}
+        </ul>
+
+        <Alert
+          isOpen={open}
+          isDelete={() => taskDelete(id)}
+          message={msg}
+          isClose={() => setOpen(false)}
         />
-      ) : (
-        <form onSubmit={handleFormSubmit}>
-          <h2>Add Todo</h2>
-          <label htmlFor="todo">Add todo: </label>
-          <input
-            name="todo"
-            type="text"
-            placeholder="Create a new todo"
-            value={todo}
-            onChange={handleInputChange}
-          />
-          <button type="submit">Add</button>
-        </form>
-      )}
-
-      <ul className="todo-list">
-        {todos.map((todo) => (
-          <TodoItem
-            key={todo.id}
-            todo={todo}
-            onEditClick={handleEditClick}
-            onDeleteClick={(id) => handleDeleteClick(id, todo)}
-            onToggleDone={handleToggleDone}
-          />
-        ))}
-      </ul>
-
-      <Alert
-        isOpen={open}
-        isDelete={() => taskDelete(id)}
-        message={msg}
-        isClose={() => setOpen(false)}
-      />
-    </div>
-  );
+      </div>
+    )}
+  </div>
+);
 }

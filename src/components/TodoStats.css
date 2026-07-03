@@ -16,7 +16,6 @@
   display: flex;
   gap: 10px;
 }
-
 .stat-card {
   display: flex;
   flex-direction: column;
@@ -27,6 +26,17 @@
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   background: #fff;
+  cursor: pointer;
+  font: inherit;
+  transition: border-color 0.15s ease, transform 0.1s ease;
+}
+
+.stat-card:hover {
+  border-color: #9ca3af;
+}
+
+.stat-card:active {
+  transform: scale(0.97);
 }
 
 .stat-value {
