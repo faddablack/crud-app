@@ -12,6 +12,7 @@ import {
   deleteTodo,
 } from "./database";
 import TodoStats from './components/TodoStats';
+import { Button } from "@mui/material";
 
 
 export default function App() {
@@ -92,7 +93,7 @@ if (loading) {
 
 return (
   <div className="App app-layout">
-    <TodoStats todos={todos} onSelect={handleCardClick} />
+    {view == 'dashboard' && <TodoStats todos={todos} onSelect={handleCardClick} />}
 
     {view !== 'dashboard' && (
       <div className="main-content">
@@ -120,7 +121,7 @@ return (
                 value={todo}
                 onChange={handleInputChange}
               />
-              <button type="submit">Add</button>
+              <Button variant="text" type="submit">Add</Button>
             </form>
           )
         )}

@@ -1,3 +1,5 @@
+import { Button } from "@mui/material";
+
 export default function EditForm({
   // still need the currentTodo 
   currentTodo,
@@ -21,10 +23,10 @@ export default function EditForm({
         value={currentTodo.text}
         onChange={onEditInputChange}
       />
-      <button type="submit" onClick={onEditFormSubmit}>
+      <Button variant="outlined" size="small" type="submit" onClick={onEditFormSubmit}>
         Update
-      </button>
-      <button onClick={() => setIsEditing(false)}>Cancel</button>
+      </Button>
+      <Button onClick={() => setIsEditing(false)}>Cancel</Button>
     </form>
   );
 }
