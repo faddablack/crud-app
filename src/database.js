@@ -25,6 +25,19 @@ export async function getDb() {
     )
   `);
 
+  // Migration: add created_at to existing tables that predate this column
+  const columns = rowsToObjects(dbInstance.exec("PRAGMA table_info(todos)"));
+  const hasCreatedAt = columns.some((col) => col.name === "created_at");
+  if (!hasCreatedAt) {
+    dbInstance.run(`ALTER TABLE todos ADD COLUMN created_at TEXT`);
+    // Backfill existing rows so old todos still show a timestamp
+    dbInstance.run(
+      `UPDATE todos SET created_at = ? WHERE created_at IS NULL`,
+      [new Date().toISOString()]
+    );
+    persist(dbInstance);
+  }
+
   return dbInstance;
 }
 
@@ -42,12 +55,18 @@ export function rowsToObjects(result) {
 }
 
 export function getAllTodos(db) {
-  const result = db.exec("SELECT id, text, done FROM todos ORDER BY id");
+  const result = db.exec(
+    "SELECT id, text, done, created_at FROM todos ORDER BY id"
+  );
   return rowsToObjects(result).map((t) => ({ ...t, done: !!t.done }));
 }
 
 export function addTodo(db, text) {
-  db.run("INSERT INTO todos (text, done) VALUES (?, ?)", [text, 0]);
+  db.run("INSERT INTO todos (text, done, created_at) VALUES (?, ?, ?)", [
+    text,
+    0,
+    new Date().toISOString(),
+  ]);
   persist(db);
   return getAllTodos(db);
 }
