@@ -8,17 +8,21 @@ export default function TodoItem({
   onToggleDone
 }) {
   return (
-     <Card variant="outlined" sx={{ maxWidth: 360 }}>
-    <li key={todo.id}>
-        <Box sx={{ '& button': { m: 1 } }}>
-      <Checkbox checked={!!todo.done} onChange={() => onToggleDone(todo.id)} />
-      <span style={{ textDecoration: todo.done ? "line-through" : "none" }}>
-        {todo.text}
-      </span>
-      <Button size="small" variant="outlined" onClick={() => onEditClick(todo)}>Edit</Button>
-     <Button size="small" variant="outlined" color="error" onClick={() => onDeleteClick(todo.id)}>Delete</Button>
-     </Box>
+    <li>
+      <Card variant="outlined" sx={{ maxWidth: 360 }}>
+        <Box sx={{ display: "flex", alignItems: "center", '& button': { m: 1 } }}>
+          <Checkbox checked={!!todo.done} onChange={() => onToggleDone(todo.id)} />
+          <span style={{ textDecoration: todo.done ? "line-through" : "none" }}>
+            {todo.text}
+          </span>
+          <Button size="small" variant="outlined" onClick={() => onEditClick(todo)}>
+            Edit
+          </Button>
+          <Button size="small" variant="outlined" color="error" onClick={() => onDeleteClick(todo.id)}>
+            Delete
+          </Button>
+        </Box>
+      </Card>
     </li>
-    </Card>
   );
 }
