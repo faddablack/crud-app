@@ -38,6 +38,17 @@ export async function getDb() {
     persist(dbInstance);
   }
 
+  // Migration: add updated_at to existing tables that predate this column
+  const hasUpdatedAt = columns.some((col) => col.name === "updated_at");
+  if (!hasUpdatedAt) {
+    dbInstance.run(`ALTER TABLE todos ADD COLUMN updated_at TEXT`);
+    // Backfill existing rows so old todos still show a timestamp
+    dbInstance.run(
+      `UPDATE todos SET updated_at = created_at WHERE updated_at IS NULL`
+    );
+    persist(dbInstance);
+  }
+
   return dbInstance;
 }
 
@@ -56,29 +67,36 @@ export function rowsToObjects(result) {
 
 export function getAllTodos(db) {
   const result = db.exec(
-    "SELECT id, text, done, created_at FROM todos ORDER BY id"
+    "SELECT id, text, done, created_at, updated_at FROM todos ORDER BY id"
   );
   return rowsToObjects(result).map((t) => ({ ...t, done: !!t.done }));
 }
 
 export function addTodo(db, text) {
-  db.run("INSERT INTO todos (text, done, created_at) VALUES (?, ?, ?)", [
-    text,
-    0,
-    new Date().toISOString(),
-  ]);
+  const now = new Date().toISOString();
+  db.run(
+    "INSERT INTO todos (text, done, created_at, updated_at) VALUES (?, ?, ?, ?)",
+    [text, 0, now, now]
+  );
   persist(db);
   return getAllTodos(db);
 }
 
 export function updateTodoText(db, id, text) {
-  db.run("UPDATE todos SET text = ? WHERE id = ?", [text, id]);
+  db.run("UPDATE todos SET text = ?, updated_at = ? WHERE id = ?", [
+    text,
+    new Date().toISOString(),
+    id,
+  ]);
   persist(db);
   return getAllTodos(db);
 }
 
 export function toggleTodoDone(db, id) {
-  db.run("UPDATE todos SET done = NOT done WHERE id = ?", [id]);
+  db.run(
+    "UPDATE todos SET done = NOT done, updated_at = ? WHERE id = ?",
+    [new Date().toISOString(), id]
+  );
   persist(db);
   return getAllTodos(db);
 }

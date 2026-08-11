@@ -12,20 +12,21 @@ import {
   deleteTodo,
 } from "./database";
 import TodoStats from './components/TodoStats';
-import { Button } from "@mui/material";
+import { Button, TextField } from "@mui/material";
 
 
 export default function App() {
   const [db, setDb] = useState(null);
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [todo, setTodo] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [currentTodo, setCurrentTodo] = useState({});
   const [msg, setMessage] = useState("");
   const [open, setOpen] = useState(false);
   const [id, setId] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [view, setView] = useState('dashboard'); // 'dashboard' | 'pending' | 'completed'
 
   useEffect(() => {
     async function init() {
@@ -55,6 +56,7 @@ export default function App() {
 
   function handleEditFormSubmit(e) {
     e.preventDefault();
+    // database.js stamps updated_at internally on every text update
     setTodos(updateTodoText(db, currentTodo.id, currentTodo.text));
     setIsEditing(false);
   }
@@ -78,33 +80,53 @@ export default function App() {
     setTodos(deleteTodo(db, id));
     setOpen(false);
   }
-const [view, setView] = useState('dashboard'); // 'dashboard' | 'pending' | 'completed'
 
-function handleCardClick(type) {
-  setView(type);
-}
+  function handleSearchChange(e) {
+    setSearchQuery(e.target.value);
+  }
 
-function handleBackClick() {
-  setView('dashboard');
-}
-if (loading) {
-  return <div className="App">Loading…</div>;
-}
+  function handleCardClick(type) {
+    setView(type);
+  }
 
-return (
-  <div className="App app-layout">
-    {view == 'dashboard' && <TodoStats todos={todos} onSelect={handleCardClick} />}
+  function handleBackClick() {
+    setView('dashboard');
+  }
 
-    {view !== 'dashboard' && (
-      <div className="main-content">
-        <button className="back-button" onClick={handleBackClick}>
-          ← Back to dashboard
-        </button>
+  if (loading) {
+    return <div className="App">Loading…</div>;
+  }
 
-        <h2>{view === 'pending' ? 'Pending Todos' : 'Completed Todos'}</h2>
+  // Apply the pending/completed split first, then filter by the search query
+  const visibleTodos = todos
+    .filter((t) => (view === 'pending' ? !t.done : t.done))
+    .filter((t) =>
+      t.text.toLowerCase().includes(searchQuery.trim().toLowerCase())
+    );
 
-        {view === 'pending' && (
-          isEditing ? (
+  return (
+    <div className="App app-layout">
+      {view === 'dashboard' && <TodoStats todos={todos} onSelect={handleCardClick} />}
+
+      {view !== 'dashboard' && (
+        <div className="main-content">
+          <button className="back-button" onClick={handleBackClick}>
+            ← Back to dashboard
+          </button>
+
+          <h2>{view === 'pending' ? 'Pending Todos' : 'Completed Todos'}</h2>
+
+          <TextField
+            label="Search tasks"
+            variant="outlined"
+            size="small"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            placeholder="Search by task text…"
+            style={{ marginBottom: '1rem', width: '100%' }}
+          />
+
+          {isEditing ? (
             <EditForm
               currentTodo={currentTodo}
               setIsEditing={setIsEditing}
@@ -112,42 +134,45 @@ return (
               onEditFormSubmit={handleEditFormSubmit}
             />
           ) : (
-            <form onSubmit={handleFormSubmit}>
-              <label htmlFor="todo">Add todo: </label>
-              <input
-                name="todo"
-                type="text"
-                placeholder="Create a new todo"
-                value={todo}
-                onChange={handleInputChange}
-              />
-              <Button variant="text" type="submit">Add</Button>
-            </form>
-          )
-        )}
+            view === 'pending' && (
+              <form onSubmit={handleFormSubmit}>
+                <label htmlFor="todo">Add todo: </label>
+                <input
+                  name="todo"
+                  type="text"
+                  placeholder="Create a new todo"
+                  value={todo}
+                  onChange={handleInputChange}
+                />
+                <Button variant="text" type="submit">Add</Button>
+              </form>
+            )
+          )}
 
-        <ul className="todo-list">
-          {todos
-            .filter((t) => (view === 'pending' ? !t.done : t.done))
-            .map((todo) => (
-              <TodoItem
-                key={todo.id}
-                todo={todo}
-                onEditClick={handleEditClick}
-                onDeleteClick={(id) => handleDeleteClick(id, todo)}
-                onToggleDone={handleToggleDone}
-              />
-            ))}
-        </ul>
+          <ul className="todo-list">
+            {visibleTodos.length === 0 ? (
+              <li className="no-results">No tasks match your search.</li>
+            ) : (
+              visibleTodos.map((todo) => (
+                <TodoItem
+                  key={todo.id}
+                  todo={todo}
+                  onEditClick={handleEditClick}
+                  onDeleteClick={(id) => handleDeleteClick(id, todo)}
+                  onToggleDone={handleToggleDone}
+                />
+              ))
+            )}
+          </ul>
 
-        <Alert
-          isOpen={open}
-          isDelete={() => taskDelete(id)}
-          message={msg}
-          isClose={() => setOpen(false)}
-        />
-      </div>
-    )}
-  </div>
-);
+          <Alert
+            isOpen={open}
+            isDelete={() => taskDelete(id)}
+            message={msg}
+            isClose={() => setOpen(false)}
+          />
+        </div>
+      )}
+    </div>
+  );
 }
